@@ -8,6 +8,7 @@ LIB_WORK = work
 SV_STD__std = $(LIB_SV_STD)/_lib.qdb
 WORK__tb_keccak_sv_unit = $(LIB_WORK)/tb_keccak_sv_unit/_primary.dat
 WORK__tb_keccak = $(LIB_WORK)/tb_keccak/_primary.dat
+WORK__prog_keccak = $(LIB_WORK)/prog_keccak/_primary.dat
 WORK__pkg_keccak = $(LIB_WORK)/pkg_keccak/_primary.dat
 WORK__keccak_sv_unit = $(LIB_WORK)/keccak_sv_unit/_primary.dat
 WORK__keccak_round_sv_unit = $(LIB_WORK)/keccak_round_sv_unit/_primary.dat
@@ -27,6 +28,7 @@ sim_output.txt: whole_library
 
 whole_library :     $(WORK__tb_keccak_sv_unit) \
     $(WORK__tb_keccak) \
+    $(WORK__prog_keccak) \
     $(WORK__pkg_keccak) \
     $(WORK__keccak_sv_unit) \
     $(WORK__keccak_round_sv_unit) \
@@ -47,9 +49,11 @@ $(WORK__keccak_round_sv_unit) \
 $(WORK__keccak_sv_unit) \
 $(WORK__pkg_keccak) \
 $(WORK__tb_keccak) \
-$(WORK__tb_keccak_sv_unit) : work \
+$(WORK__tb_keccak_sv_unit) \
+$(WORK__prog_keccak) : work \
 		 pkg_keccak.sv \
 		 tb_keccak.sv \
+		 prog_keccak.sv \
 		 keccak.sv \
 		 keccak_round.sv \
 		 keccak_round_constants_gen.sv \
@@ -58,6 +62,7 @@ $(WORK__tb_keccak_sv_unit) : work \
 	$(VLOG) -L mtiAvm -L mtiOvm -L mtiUvm \
 		 -L mtiUPF pkg_keccak.sv \
 		 tb_keccak.sv \
+		 prog_keccak.sv \
 		 keccak.sv \
 		 keccak_round.sv \
 		 keccak_round_constants_gen.sv \

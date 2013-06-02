@@ -11,3 +11,9 @@
 *.lai
 *.la
 *.a
+
+# Output files
+output.txt
+
+# Sublime Text Configuration
+sftp-config.json
