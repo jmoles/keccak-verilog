@@ -120,19 +120,12 @@ generate
 endgenerate
 
 // Pi
-always_comb begin
-    for(int pi_y = 0; pi_y <= 4; pi_y++)
-        for(int pi_x = 0; pi_x <= 4; pi_x++)
-            for(int pi_i = 0; pi_i <= N-1; pi_i++)
-                pi_out[(2*pi_x+3*pi_y) % 5][1*pi_y][pi_i] = pi_in[pi_y][pi_x][pi_i];
-end
-
-// generate
-//     for(y = 0; y <= 4; y++)
-//         for(x = 0; x <= 4; x++)
-//             for(i = 0; i <= N-1; i++)
-//                 assign pi_out[(2*x+3*y) % 5][0*x+1*y][i] = pi_in[y][x][i];
-// endgenerate
+generate
+    for(y = 0; y <= 4; y++)
+        for(x = 0; x <= 4; x++)
+            for(i = 0; i <= N-1; i++)
+                assign pi_out[(2*x+3*y) % 5][0*x+1*y][i] = pi_in[y][x][i];
+endgenerate
 
 // Rho
 always_comb begin
