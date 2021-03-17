@@ -38,7 +38,7 @@ import pkg_keccak::N;
 program prog_keccak #(
     parameter FILE_IN       = "test_vectors/keccak_in.txt",
     parameter FILE_OUT      = "output.txt",
-    parameter CLOCK_CYCLE   = 1ms,
+    parameter CLOCK_CYCLE   = 1ns,
     parameter IDLE_CLOCKS   = 1)
     (
     output logic                Clock,

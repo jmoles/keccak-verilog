@@ -35,10 +35,12 @@
 package pkg_keccak;
 
 
-    parameter int NUM_PLANE = 5;
-    parameter int NUM_SHEET = 5;
-    parameter int LOG_D     = 4;
-    parameter int unsigned N         = 64;
+    parameter int NUM_PLANE             = 5;
+    parameter int NUM_SHEET             = 5;
+    parameter int LOG_D                 = 4;
+    parameter int unsigned N            = 64;
+    parameter int unsigned IN_BUF_SIZE  = 64;
+    parameter int unsigned OUT_BUF_SIZE = 64;
 
 
     typedef logic   [N-1:0]             k_lane;
