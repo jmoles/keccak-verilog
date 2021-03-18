@@ -32,21 +32,27 @@
 // THE SOFTWARE.
 // ============================================================================
 
-import pkg_keccak::N;
+import pkg_keccak::IN_BUF_SIZE;
+import pkg_keccak::OUT_BUF_SIZE;
+parameter int unsigned IN_BUF_WORD_SIZE  = (1024/IN_BUF_SIZE)-1;
+parameter int unsigned IN_BUF_DATA = 1023-(IN_BUF_SIZE-1);
+parameter int unsigned COUNT_OUT_WORD_SIZE = 256/OUT_BUF_SIZE;
+
+
 
 module keccak_buffer(
-    input               Clock,
-    input               Reset,
-    input   [N-1:0]     Din_buffer_in,
-    input               Din_buffer_in_valid,
-    input               Last_block,
-    input   [255:0]     Dout_buffer_in,
-    input               Ready,
+    input                         Clock,
+    input                         Reset,
+    input   [IN_BUF_SIZE-1:0]     Din_buffer_in,
+    input                         Din_buffer_in_valid,
+    input                         Last_block,
+    input   [255:0]               Dout_buffer_in,
+    input                         Ready,
 
-    output              Din_buffer_full,
-    output  [1023:0]    Din_buffer_out,
-    output  [N-1:0]     Dout_buffer_out,
-    output  logic       Dout_buffer_out_valid);
+    output                        Din_buffer_full,
+    output  [1023:0]              Din_buffer_out,
+    output  [OUT_BUF_SIZE-1:0]    Dout_buffer_out,
+    output  logic                 Dout_buffer_out_valid);
 
 
     logic               mode;               // 0 = Input mode, 1 = Output Mode
@@ -59,7 +65,7 @@ module keccak_buffer(
 
 
     assign  Din_buffer_out                      = buffer_data;
-    assign  Dout_buffer_out                     = buffer_data[N-1:0];
+    assign  Dout_buffer_out                     = buffer_data[OUT_BUF_SIZE-1:0];
     assign  Din_buffer_full                     = buffer_full;
 
     always_ff @(posedge Clock or posedge Reset)
@@ -86,7 +92,7 @@ module keccak_buffer(
                     if(Din_buffer_in_valid & ~buffer_full) begin
 
                         // Shift buffer for the data
-                        buffer_data             <= (buffer_data >> N);
+                        buffer_data             <= (buffer_data >> IN_BUF_SIZE);
 
                         // TODO: Delete this old for loop after checking above in sim.
                         // for (int i = 0; i < 15; ++i) begin
@@ -94,9 +100,9 @@ module keccak_buffer(
                         // end
 
                         // Insert a new input
-                        buffer_data[1023:960]   <= Din_buffer_in;
+                        buffer_data[1023:IN_BUF_DATA]   <= Din_buffer_in;
 
-                        if(count_in_words == 15) begin
+                        if(count_in_words == IN_BUF_WORD_SIZE) begin
                             // Buffer rull and ready for being absorbed by the permutation
                             buffer_full         <= '1;
                             count_in_words      <= '0;
@@ -114,11 +120,11 @@ module keccak_buffer(
                     count_out_words             <= count_out_words + 1;
                     Dout_buffer_out_valid       <= '1;
                 end else begin
-                    if(count_out_words < 4) begin
+                    if(count_out_words < COUNT_OUT_WORD_SIZE) begin
                         count_out_words         <= count_out_words + 1;
                         Dout_buffer_out_valid   <= '1;
 
-                        buffer_data             <= (buffer_data >> N);
+                        buffer_data             <= (buffer_data >> OUT_BUF_SIZE);
 
                         // TODO: Delete this old for loop after checking above in sim.
                         // for (int j = 0; j < 2; ++j) begin

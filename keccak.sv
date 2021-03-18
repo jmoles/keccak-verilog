@@ -34,19 +34,21 @@
 
 import pkg_keccak::k_state;
 import pkg_keccak::N;
+import pkg_keccak::IN_BUF_SIZE;
+import pkg_keccak::OUT_BUF_SIZE;
 
 module keccak (
-    input           Clock,
-    input           Reset,
-    input           Start,
-    input   [N-1:0] Din,
-    input           Din_valid,
-    input           Last_block,
+    input                      Clock,
+    input                      Reset,
+    input                      Start,
+    input   [IN_BUF_SIZE-1:0]  Din,
+    input                      Din_valid,
+    input                      Last_block,
 
-    output          Buffer_full,
-    output          Ready,
-    output  [N-1:0] Dout,
-    output          Dout_valid);
+    output                     Buffer_full,
+    output                     Ready,
+    output  [OUT_BUF_SIZE-1:0] Dout,
+    output                     Dout_valid);
 
 
 k_state         reg_data, Round_in, Round_out;
