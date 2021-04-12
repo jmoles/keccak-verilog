@@ -61,7 +61,7 @@ VERILATOR_FLAGS += -Os
 # Warn abount lint issues; may not want this on less solid designs
 VERILATOR_FLAGS += -Wall
 # Compile
-VERILATOR_FLAGS += --build
+#VERILATOR_FLAGS += --build
 # Make waveforms
 VERILATOR_FLAGS += --trace
 # Check SystemVerilog assertions
@@ -97,7 +97,7 @@ run:
 # To compile, we can either
 # 1. Pass --build to Verilator by editing VERILATOR_FLAGS above.
 # 2. Or, run the make rules Verilator does:
-#	$(MAKE) -j -C obj_dir -f Vkeccak.mk
+	$(MAKE) -j -C obj_dir -f Vkeccak.mk
 # 3. Or, call a submakefile where we can override the rules ourselves:
 #	$(MAKE) -j -C obj_dir -f ../Makefile_obj
 

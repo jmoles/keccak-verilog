@@ -1,5 +1,4 @@
 language: generic
-dist: focal
 before-install:
   - sudo apt-get -y install verilator
 script:
