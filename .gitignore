@@ -17,3 +17,7 @@ output.txt
 
 # Sublime Text Configuration
 sftp-config.json
+
+# Directories to ignore
+obj_dir
+logs

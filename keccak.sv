@@ -66,7 +66,7 @@ keccak_round keccak_round_i(
     .Round_constant_signal,
     .Round_out);
 
-keccak_round_constant_gen keccak_round_constant_gen_i(
+keccak_round_constants_gen keccak_round_constants_gen_i(
     .round_number(counter_nr_rounds),
     .round_constant_signal_out(Round_constant_signal));
 

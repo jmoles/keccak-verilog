@@ -58,10 +58,10 @@ module keccak_buffer(
     logic               mode;               // 0 = Input mode, 1 = Output Mode
     logic               buffer_full;
 
-    logic   [4:0]       count_in_words;
+    logic   [31:0]       count_in_words;
     logic   [1023:0]    buffer_data;
 
-    logic   [3:0]       count_out_words;    // Range of this value is 0 - 4
+    logic   [31:0]       count_out_words;    // Range of this value is 0 - 4
 
 
     assign  Din_buffer_out                      = buffer_data;

@@ -32,7 +32,7 @@
 // THE SOFTWARE.
 // ============================================================================
 
-module keccak_round_constant_gen(
+module keccak_round_constants_gen(
         input   [4:0]          round_number,
         output  logic [63:0]  round_constant_signal_out);
 
