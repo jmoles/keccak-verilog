@@ -1,6 +1,8 @@
 language: generic
+dist: focal
 before-install:
-  - sudo apt-get install -qq verilator
+  - sudo apt-get -y install verilator
 script:
+  - verilator -version
   - make
   - cmp -s logs/output.txt test_vectors/keccak_ref_out.txt
