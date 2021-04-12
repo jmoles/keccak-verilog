@@ -1,9 +1,11 @@
 language: minimal
 dist: focal
+before-install:
+  - sudo apt-get -y install perl python3 make g++ ccache autoconf flex bison libgoogle-perftools-dev numactl perl-doc libfl2 libfl-dev zlibc zlib1g zlib1g-dev
 before-script:
   - git clone https://github.com/verilator/verilator.git
   - unset VERILATOR_ROOT
-  - pushd verilator && git checkout v4.110 && autoconf && ./configure && make -j && sudo make install
+  - pushd verilator && git checkout v4.110 && autoconf && ./configure && make && sudo make install
 script:
   - verilator -version
   - make
