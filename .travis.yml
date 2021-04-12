@@ -5,7 +5,7 @@ before-install:
 before-script:
   - git clone https://github.com/verilator/verilator.git
   - unset VERILATOR_ROOT
-  - pushd verilator && git checkout v4.110 && autoconf && ./configure && make && sudo make install
+  - pushd verilator && git checkout v4.110 && autoconf && ./configure && make && sudo make install && popd
 script:
   - verilator -version
   - make
