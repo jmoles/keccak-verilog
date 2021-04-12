@@ -40,7 +40,7 @@
 #include <verilated.h>
 
 // Include model header, generated from Verilating "Vtb_keccak.sv"
-#include "Vkeccak.h"
+#include "Vpkg_keccak.h"
 
 // Constants
 const std::string FILENAME_IN = "test_vectors/keccak_in.txt";
@@ -96,7 +96,7 @@ int main(int argc, char** argv, char** env) {
     Verilated::mkdir("logs");
 
     // Construct the Verilated model
-    const std::unique_ptr<Vkeccak> top{new Vkeccak};
+    const std::unique_ptr<Vpkg_keccak> top{new Vpkg_keccak};
 
     // Set initial values on Vkeccak's input signals
     top->Clock = false;

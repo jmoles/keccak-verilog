@@ -69,7 +69,7 @@ VERILATOR_FLAGS += --assert
 # Generate coverage analysis
 VERILATOR_FLAGS += --coverage
 # Speicfy the top file.
-VERILATOR_FLAGS += --top keccak
+#VERILATOR_FLAGS += --top keccak
 # X-assign
 VERILATOR_FLAGS += --x-assign unique
 VERILATOR_FLAGS += --x-initial unique
@@ -97,7 +97,7 @@ run:
 # To compile, we can either
 # 1. Pass --build to Verilator by editing VERILATOR_FLAGS above.
 # 2. Or, run the make rules Verilator does:
-	$(MAKE) -j -C obj_dir -f Vkeccak.mk
+	$(MAKE) -j -C obj_dir -f Vpkg_keccak.mk
 # 3. Or, call a submakefile where we can override the rules ourselves:
 #	$(MAKE) -j -C obj_dir -f ../Makefile_obj
 
@@ -105,7 +105,7 @@ run:
 	@echo "-- RUN ---------------------"
 	@rm -rf logs
 	@mkdir -p logs
-	obj_dir/Vkeccak +trace
+	obj_dir/Vpkg_keccak +trace
 
 	@echo
 	@echo "-- COVERAGE ----------------"
