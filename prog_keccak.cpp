@@ -42,6 +42,12 @@
 // Include model header, generated from Verilating "Vtb_keccak.sv"
 #include "Vkeccak.h"
 
+// Constants
+const std::string FILENAME_IN = "test_vectors/keccak_in.txt";
+const char * FILE_OUT = "logs/output.txt";
+const int MAX_RUNTIME = 3000000;
+const bool DEBUG = false;
+
 // Current simulation time (64-bit unsigned)
 vluint64_t main_time = 0;
 // Called by $time in Verilog
@@ -56,18 +62,12 @@ int main(int argc, char** argv, char** env) {
     // Create logs/ directory in case we have traces to put under it
     Verilated::mkdir("logs");
 
-    // Some constants
-    const int IDLE_CLOCKS = 1;
-
     // Other variables
     int num_test, result;
 
     // Create our input/output files
-    const std::string FILENAME_IN = "test_vectors/keccak_in.txt";
-    const char * FILE_OUT = "logs/output.txt";
     char line_in[16];
     std::string data_file_in, line_out;
-
     std::FILE * file_out;
     file_out = fopen(FILE_OUT, "w");
 
@@ -92,148 +92,163 @@ int main(int argc, char** argv, char** env) {
     // This needs to be called before you create any model
     Verilated::commandArgs(argc, argv);
 
+    // Make directory for logs.
+    Verilated::mkdir("logs");
+
     // Construct the Verilated model
     const std::unique_ptr<Vkeccak> top{new Vkeccak};
 
-    // Set Vtop's input signals
-    top->Clock = 0b0;
-    top->Reset = 0b1;
-    top->Start = 0b0;
-    top->Din = 0x00000000000000000;
-    top->Din_valid = 0b0;
-    top->Last_block = 0b0;
+    // Set initial values on Vkeccak's input signals
+    top->Clock = false;
+    top->Reset = true;
+    top->Start = false;
+    top->Din = 0;
+    top->Din_valid = false;
+    top->Last_block = false;
 
-    // Do reset and other prep before the main loop.
-    while(main_time < 30 && !Verilated::gotFinish()) {
-        top->Reset = 0b1;
-        top->Start = 0b0;
-        top->Din = 0x00000000000000000;
-        top->Din_valid = 0b0;
-        top->Last_block = 0b0;
+    enum States {
+        RESET,
+        NUM_TEST,
+        DATA_IN,
+        DATA_DONE,
+        LAST_BLOCK_LOW,
+        DATA_OUT,
+        DONE
+    };
 
-        // Toggle the clock and increment the time.
-        top->Clock = !top->Clock;
-        main_time++;
+    // Variables used for control flow
+    States curr_state = RESET;  // State machine state
+    int reset_count = 0;         // Number of times the reset loop as ran.
+    const int RESET_MAX = 30;   // Number of clock cycles to perform reset.
+    int numTests = 0;           // Number of tests read in from file.
+    int dout_count = 0;         // Number of times dout has passed valid data.
 
-        printf("RESET: Time: %d Reset: %d\n", main_time, top->Reset);
-    }
-
-    // Read the number of tests and start.
-    top->Reset = 0;
-    top->Start = 1;
-    data_in >> line_in;
-    num_test = std::stoi(line_in);
-
-    // Toggle the clock and increment the time.
-    top->Clock = !top->Clock;
-    main_time++;
-    top->Clock = !top->Clock;
-    main_time++;
-
-    // Read the first line of input data and hop into the loop.
-    data_in >> line_in;
-
-    // Main loop - simulate until $finish
+    // The main loop
     while (!Verilated::gotFinish()) {
-
-        printf("READIN: Time: %d Num_tests: %d line_in: 0x%s\n", main_time, num_test, line_in);
-
-        top->Clock = !top->Clock;
-        main_time++;
+        // Increment time and clock
         top->Clock = !top->Clock;
         main_time++;
 
-        while(line_in[0] != '-') {
+        if(!top->Clock) {
 
-            if (!top->Clock) {
-                if(top->Buffer_full) {
-                    top->Din_valid = 0;
-                } else {
-                    uint64_t line_in_uint64;
-                    line_in_uint64 = std::strtoull(line_in, NULL, 16);
+            if(main_time > MAX_RUNTIME) {
+                curr_state = DONE;
+            }
 
-                    sscanf(line_in, "%llX", &line_in_uint64);
+            switch(curr_state) {
+                case RESET:
+                    // In reset
+                    top->Reset = true;
+                    top->Start = false;
+                    top->Din = 0x00000000000000000;
+                    top->Din_valid = false;
+                    top->Last_block = false;
+
+                    if(DEBUG) printf("RESET: Time: %d Reset: %d reset_count: %d\n", main_time, top->Reset, reset_count);
+
+                    reset_count++;
+                    if(reset_count >= RESET_MAX) {
+                        curr_state = NUM_TEST;
+                    }
+                    break;
+                case NUM_TEST:
+                    // Next phase after reset. End reset
+                    top->Reset = false;
+                    top->Start = true;
+
+                    // Need to read the first line of the file in and get the number of tests.
+                    data_in >> line_in;
+                    num_test = std::stoi(line_in);
+
+                    if(DEBUG) printf("NUM_TEST: Time: %d #Tests: %d\n", main_time, num_test);
+                    curr_state = DATA_IN;
+                    break;
+                case DATA_IN:
+                    top->Start = false;
+
+                    if(top->Buffer_full) {
+                        break;
+                    }
+
                     data_in >> line_in;
 
-                    top->Din = line_in_uint64;
-                    top->Din_valid = 1;
+                    if(line_in[0] == '-') {
+                        curr_state = DATA_DONE;
+                        top->Din_valid = false;
+                        break;
+                    } else if (line_in[0] == '.') {
+                        curr_state = DONE;
+                        top->Din_valid = false;
+                        break;
+                    }
 
-                    printf("READIN2: Time: %d Buffer_full: %d line_in: %s Din: 0x%.16X\n", main_time, top->Buffer_full, line_in, top->Din);
-                }
+                    QData line_in_int64;
+                    sscanf(line_in, "%llx", &line_in_int64);
+
+                    top->Din = line_in_int64;
+                    top->Din_valid = true;
+
+                    if(DEBUG) printf("DATA_IN: Time: %d Buffer_full: %d Din: 0x%.16llX\n", main_time, top->Buffer_full, top->Din);
+
+                    break;
+
+                case DATA_DONE:
+                    top->Din_valid = false;
+
+                    if(DEBUG) printf("DATA_DONE: Time: %d Buffer_full: %d Ready: %d Last_Block: %d\n", main_time, top->Buffer_full, top->Ready, top->Last_block);
+
+                    if (top->Buffer_full) break;
+                    if (!top->Ready) break;
+
+                    top->Last_block = true;
+                    curr_state = DATA_OUT;
+                    if(DEBUG) printf("DATA_DONE: Time: %d Buffer_full: %d Ready: %d Last_Block: %d\n", main_time, top->Buffer_full, top->Ready, top->Last_block);
+
+                    break;
+
+                case DATA_OUT:
+                    top->Last_block = false;
+                    if(top->Dout_valid) {
+                        fprintf(file_out, "%.16llX\n", top->Dout);
+                        dout_count++;
+                    } else if (dout_count > 3) {
+                        fprintf(file_out, "-\n");
+                        dout_count = 0;
+                        top->Start = true;
+                        curr_state = DATA_IN;
+                    }
+                    if(DEBUG) printf("DATA_OUT: Time: %d Dout_Valid: %X Start: %d Dout: %llX\n", main_time, top->Dout_valid, top->Start, top->Dout);
+                    break;
+
+                case DONE:
+                    // We are done. Wrap up things and quit.
+                    top->eval();
+
+                    // Close file pointer
+                    fclose(file_out);
+
+                    // Final model cleanup
+                    top->final();
+
+                        // Coverage analysis (calling write only after the test is known to pass)
+                    #if VM_COVERAGE
+                        printf("Writing coverage analysis.");
+                        Verilated::mkdir("logs");
+                        VerilatedCov::write("logs/coverage.dat");
+                    #endif
+
+                    // Return good completion status
+                    // Don't use exit() or destructor won't get called
+                    return 0;
+
+                    break;
+
+                default:
+                    curr_state = RESET;
+                    break;
+
             }
-
-            top->Clock = !top->Clock;
-            main_time++;
-            if(main_time > 100) return 0;
-        }
-
-        // If here, all lines read. Start looking at the potential
-        // data coming on output.
-
-        // Ensure that we are not putting more data in.
-        top->Din_valid = 0;
-
-        // Wait until buffer isn't full. Then, wait
-        // until ready comes back high waiting at least
-        // a clock tick before beginning to check.
-        do {
-            top->Clock = !top->Clock;
-            main_time++;
-            printf("BUFF_WAIT: Time: %d Buffer Full: %x\n", main_time, top->Buffer_full);
-        } while(top->Buffer_full);
-
-        do {
-            top->Clock = !top->Clock;
-            main_time++;
-            printf("WAIT_READY: Time: %d Ready: %d\n", main_time, top->Ready);
-            if (main_time > 300) return 1;
-        } while(!top->Ready);
-
-        // Pulse Last_block high for a single cycle.
-        std::cout << "PULSE_LAST_BLOCK Time: " << main_time << std::endl;
-        top->Clock = !top->Clock;
-        main_time++;
-        if(top->Clock) {
-            top->Clock = !top->Clock;
-            main_time++;
-        }
-
-        top->Last_block          = 1;
-        std::cout << "LAST_BLOCK_HIGH Time: " << main_time << std::endl;
-        top->Clock = !top->Clock;
-        main_time++;
-        top->Clock = !top->Clock;
-        main_time++;
-
-        top->Last_block          = 0;
-        std::cout << "LAST_BLOCK_LOW Time: " << main_time << std::endl;
-        top->Clock = !top->Clock;
-        main_time++;
-        top->Clock = !top->Clock;
-        main_time++;
-
-        // Keep looping while output data is coming.
-        while(top->Dout_valid) {
-            if(!top->Clock) {
-                fprintf(file_out, "%llX\n", top->Dout);
-                printf("DOut: Time: %d Dout_Valid: %X Dout: %llX\n", main_time, top->Dout_valid, top->Dout);
-            }
-            main_time++;
-            top->Clock = !top->Clock;
-            if(main_time > 300) return 0;
-        }
-
-        fprintf(file_out, "-\n");
-        top->Start = 1;
-
-        main_time++;
-        top->Clock = !top->Clock;
-        main_time++;
-        top->Clock = !top->Clock;
-        while(top->Clock) {
-            main_time++;
-            top->Clock = !top->Clock;
-        }
+        } // end if !top->Clock()
 
         // Evaluate model
         // (If you have multiple models being simulated in the same
@@ -241,26 +256,5 @@ int main(int argc, char** argv, char** env) {
         // eval_end_step() on each. See the manual.)
         top->eval();
 
-        // Read a line of input data.
-        file_in >> line_in;
-        if(line_in[0] == '.') {
-            break;
-        }
-    }
-
-    // Close file pointer
-    fclose(file_out);
-
-    // Final model cleanup
-    top->final();
-
-    // Coverage analysis (calling write only after the test is known to pass)
-#if VM_COVERAGE
-    Verilated::mkdir("logs");
-    VerilatedCov::write("logs/coverage.dat");
-#endif
-
-    // Return good completion status
-    // Don't use exit() or destructor won't get called
-    return 0;
-}
+    } // end while !gotFinished()
+} // end main

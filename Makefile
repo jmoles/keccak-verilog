@@ -7,7 +7,7 @@
 #   Program to aid in testing the code designed for running in Verilator.
 #
 # This is based off examples from https://github.com/verilator/verilator/.
-# 
+#
 # The MIT License (MIT)
 #
 # Copyright (c) 2021 Josh Moles
@@ -61,14 +61,19 @@ VERILATOR_FLAGS += -Os
 # Warn abount lint issues; may not want this on less solid designs
 VERILATOR_FLAGS += -Wall
 # Compile
-#VERILATOR_FLAGS += --build
+VERILATOR_FLAGS += --build
 # Make waveforms
 VERILATOR_FLAGS += --trace
 # Check SystemVerilog assertions
 VERILATOR_FLAGS += --assert
 # Generate coverage analysis
 VERILATOR_FLAGS += --coverage
+# Speicfy the top file.
 VERILATOR_FLAGS += --top keccak
+# X-assign
+VERILATOR_FLAGS += --x-assign unique
+VERILATOR_FLAGS += --x-initial unique
+VERILATOR_FLAGS += --x-initial-edge
 # Run Verilator in debug mode
 #VERILATOR_FLAGS += --debug
 # Add this trace to get a backtrace in gdb
@@ -92,9 +97,9 @@ run:
 # To compile, we can either
 # 1. Pass --build to Verilator by editing VERILATOR_FLAGS above.
 # 2. Or, run the make rules Verilator does:
-	$(MAKE) -j -C obj_dir -f Vkeccak.mk
+#	$(MAKE) -j -C obj_dir -f Vkeccak.mk
 # 3. Or, call a submakefile where we can override the rules ourselves:
-	#$(MAKE) -j -C obj_dir -f ../Makefile_obj
+#	$(MAKE) -j -C obj_dir -f ../Makefile_obj
 
 	@echo
 	@echo "-- RUN ---------------------"

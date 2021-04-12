@@ -152,5 +152,14 @@ generate
         assign Round_in[3][0][i] = reg_data[3][0][i] ^ (din_buffer_out[(3*64*5)+(0*64)+i] & (din_buffer_full & permutation_computed));
 endgenerate
 
+// Trace support for verilator.
+initial begin
+    if ($test$plusargs("trace") != 0) begin
+        $display("[%0t] Tracing to logs/vlt_dump.vcd...\n", $time);
+        $dumpfile("logs/vlt_dump.vcd");
+        $dumpvars();
+    end
+    $display("[%0t] Model running...", $time);
+end
 
 endmodule
