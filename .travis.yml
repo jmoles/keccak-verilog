@@ -1,7 +1,9 @@
-language: generic
+language: minimal
 dist: focal
-before-install:
-  - sudo apt-get -y install verilator
+before-script:
+  - git clone https://github.com/verilator/verilator.git
+  - unset VERILATOR_ROOT
+  - pushd verilator && git checkout v4.110 && ./configure && make -j && sudo make install
 script:
   - verilator -version
   - make
