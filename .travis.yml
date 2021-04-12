@@ -3,7 +3,7 @@ dist: focal
 before-script:
   - git clone https://github.com/verilator/verilator.git
   - unset VERILATOR_ROOT
-  - pushd verilator && git checkout v4.110 && ./configure && make -j && sudo make install
+  - pushd verilator && git checkout v4.110 && autoconf && ./configure && make -j && sudo make install
 script:
   - verilator -version
   - make
