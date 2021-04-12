@@ -1,0 +1,6 @@
+language: generic
+before-install:
+  - sudo apt-get install -qq verilator
+script:
+  - make
+  - cmp -s logs/output.txt test_vectors/keccak_ref_out.txt
