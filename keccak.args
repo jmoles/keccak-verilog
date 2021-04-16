@@ -1,0 +1,14 @@
+-clean
+-nospecify
+-timescale 1ns/1ps
+-mess
+-access +rwc
+regs.sv
+shift_register.sv
+pkg_keccak.sv 
+keccak_round_constants_gen.sv 
+keccak_round.sv 
+keccak_buffer_in.sv 
+keccak_unbuffered.sv 
+keccak.sv 
+tb_keccak.sv

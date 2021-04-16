@@ -4,7 +4,7 @@
 // Created:   27 May 2013
 //
 // Description:
-//
+//   Top-level testbench for the Keccak module.
 //
 // This code is almost a straight translation of the VHDL high-speed module
 // provided from http://keccak.noekeon.org/.
@@ -32,25 +32,25 @@
 // THE SOFTWARE.
 // ============================================================================
 
-package pkg_keccak;
+import pkg_keccak::N;
+
+module tb_keccak ();
+
+// Main connections to design
+logic           Clock;
+logic           Reset;
+logic           Start;
+logic  [N-1:0]  Din;
+logic           Din_valid;
+logic           Last_block;
+
+wire            Buffer_full;
+wire            Ready;
+wire   [N-1:0]  Dout;
+wire            Dout_valid;
+
+keccak keccak_i(.*);
+prog_keccak prog_keccak_i(.*);
 
 
-    parameter int NUM_PLANE             = 5;
-    parameter int NUM_SHEET             = 5;
-    parameter int LOG_D                 = 4;
-    parameter int unsigned N            = 64;
-    parameter int unsigned IN_BUF_SIZE  = 32;
-    parameter int unsigned OUT_BUF_SIZE = 32;
-
-
-    typedef logic   [N-1:0]             k_lane;
-    typedef k_lane  [NUM_SHEET-1:0]     k_plane;
-    typedef k_plane [NUM_PLANE-1:0]     k_state;
-
-
-    function int ABS (int numberIn);
-        ABS = (numberIn < 0) ? -numberIn : numberIn;
-    endfunction
-
-
-endpackage
+endmodule

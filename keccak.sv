@@ -35,122 +35,80 @@
 import pkg_keccak::k_state;
 import pkg_keccak::N;
 import pkg_keccak::IN_BUF_SIZE;
-import pkg_keccak::OUT_BUF_SIZE;
 
 module keccak (
-    input                      Clock,
-    input                      Reset,
-    input                      Start,
-    input   [IN_BUF_SIZE-1:0]  Din,
-    input                      Din_valid,
-    input                      Last_block,
+    input logic                   clk,
+    input logic                   reset,
+    input logic [IN_BUF_SIZE-1:0] din,
+    input logic                   din_valid,
+    input logic                   last_block,
 
-    output                     Buffer_full,
-    output                     Ready,
-    output  [OUT_BUF_SIZE-1:0] Dout,
-    output                     Dout_valid);
+    output logic                    buffer_full,
+    output logic                    ready,
+    output logic [255:0]            dout_all,
+    output logic [31:0]             dout_blk_0,
+    output logic [31:0]             dout_blk_1,
+    output logic [31:0]             dout_blk_2,
+    output logic [31:0]             dout_blk_3,
+    output logic [31:0]             dout_blk_4,
+    output logic [31:0]             dout_blk_5,
+    output logic [31:0]             dout_blk_6,
+    output logic [31:0]             dout_blk_7,
+    output logic                    dout_valid,
+    output logic                    intermediate_dout_valid
+);
 
-
-k_state         reg_data, Round_in, Round_out;
-logic [255:0]   reg_data_vector;
-logic [4:0]     counter_nr_rounds;
-logic           din_buffer_full;
-logic [N-1:0]   Round_constant_signal;
-logic [1023:0]  din_buffer_out;
-logic           permutation_computed;
-
-genvar x,i,col,row;
-
-keccak_round keccak_round_i(
-    .Round_in,
-    .Round_constant_signal,
-    .Round_out);
-
-keccak_round_constant_gen keccak_round_constant_gen_i(
-    .round_number(counter_nr_rounds),
-    .round_constant_signal_out(Round_constant_signal));
-
-keccak_buffer keccak_buffer_i(
-    .Clock(Clock),
-    .Reset(Reset),
-    .Din_buffer_in(Din),
-    .Din_buffer_in_valid(Din_valid),
-    .Last_block(Last_block),
-    .Dout_buffer_in(reg_data_vector),
-    .Ready(permutation_computed),
-
-    .Din_buffer_full(din_buffer_full),
-    .Din_buffer_out(din_buffer_out),
-    .Dout_buffer_out(Dout),
-    .Dout_buffer_out_valid(Dout_valid));
-
-assign Ready       = permutation_computed;
-assign Buffer_full = din_buffer_full;
-
-generate
-    for(x = 0; x <= 3; x++)
-        for(i = 0; i <= 63; i++)
-            assign reg_data_vector[64*x+i] = reg_data[0][x][i];
-endgenerate
-
-always_ff @ (posedge Clock or posedge Reset) begin
-    if(Reset) begin
-        reg_data                            <= '0;
-        counter_nr_rounds                   <= '0;
-        permutation_computed                <= '1;
-    end else begin
-        if(Start) begin
-            reg_data                        <= '0;
-            counter_nr_rounds               <= '0;
-            permutation_computed            <= '1;
-        end else begin
-            if(din_buffer_full && permutation_computed) begin
-                counter_nr_rounds           <= 1;
-                permutation_computed        <= '0;
-                reg_data                    <= Round_out;
-            end else begin
-                if(counter_nr_rounds < 24 && ~permutation_computed) begin
-                    counter_nr_rounds       <= counter_nr_rounds + 1;
-                    reg_data                <= Round_out;
-                end // End if counter_nr_rounds < 24 & ~permutation_computed
-
-                if(counter_nr_rounds == 23) begin
-                    permutation_computed    <= '1;
-                    counter_nr_rounds       <= '0;
-                end // End if counter_nr_rounds == 23
-            end // End if Din_buffer_full && permutation_computer / else
-        end // End if Start / else
-    end // End if Reset/else
-end // End always_ff @ possedge Clock
-
-// Input Mapping
-
-// Capacity Part
-generate
-    for (col = 1; col <= 4; col++)
-        for(i = 0; i<= 63; i++)
-            assign Round_in[3][col][i] = reg_data[3][col][i];
-endgenerate
-
-generate
-    for(col = 0; col <= 4; col++)
-        for(i = 0; i <= 63; i++)
-            assign Round_in[4][col][i] = reg_data[4][col][i];
-endgenerate
+    logic [1023:0] din_unbuffered;
+    logic buffer_in_output_valid;
+    logic internal_intermediate_dout_valid;
+    logic last_block_reg_q;
+    logic last_block_buf_output;
+    logic [255:0] dout_unbuffered;
+    logic unbuffered_dout_valid;
 
 
-// Rate Part
-generate
-    for(row = 0; row <= 2; row++)
-        for(col = 0; col <= 4; col++)
-            for(i = 0; i <= 63; i++)
-                assign Round_in[row][col][i] = reg_data[row][col][i] ^ (din_buffer_out[(row*64*5) + (col*64) + i] & (din_buffer_full & permutation_computed));
-endgenerate
+    assign intermediate_dout_valid = internal_intermediate_dout_valid;
 
-generate
-    for(i = 0; i<= 63; i++)
-        assign Round_in[3][0][i] = reg_data[3][0][i] ^ (din_buffer_out[(3*64*5)+(0*64)+i] & (din_buffer_full & permutation_computed));
-endgenerate
+    assign dout_valid = last_block_reg_q && internal_intermediate_dout_valid;
+    assign dout_all = dout_unbuffered;
+    assign dout_blk_0 = dout_unbuffered[31:0];
+    assign dout_blk_1 = dout_unbuffered[63:32];
+    assign dout_blk_2 = dout_unbuffered[95:64];
+    assign dout_blk_3 = dout_unbuffered[127:96];
+    assign dout_blk_4 = dout_unbuffered[159:128];
+    assign dout_blk_5 = dout_unbuffered[191:160];
+    assign dout_blk_6 = dout_unbuffered[223:192];
+    assign dout_blk_7 = dout_unbuffered[255:224];
 
+    EnResetReg #(.nbits(1)) last_block_reg (
+                                            .clk(clk),
+                                            .reset(reset),
+                                            .en(last_block_buf_output),
+                                            .d(1'b1),
+                                            .q(last_block_reg_q)
+    );
+
+    keccak_buffer_in in_buf(
+                            .clk(clk),
+                            .reset(reset),
+                            .buffer_input(din),
+                            .input_valid(din_valid),
+                            .output_ready(ready),
+                            .last_block_input(last_block),
+                            .buffer_full(buffer_full),
+                            .last_block_output(last_block_buf_output),
+                            .buffer_output(din_unbuffered),
+                            .buffer_output_valid(buffer_in_output_valid)
+    );
+
+    keccak_unbuffered keccak_unbuf (
+                                   .clk(clk),
+                                   .reset(reset),
+                                   .din(din_unbuffered),
+                                   .din_valid(buffer_in_output_valid),
+                                   .ready(ready),
+                                   .dout(dout_unbuffered),
+                                   .dout_valid(internal_intermediate_dout_valid)
+    );
 
 endmodule
