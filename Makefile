@@ -58,7 +58,7 @@ VERILATOR_FLAGS += -cc --exe
 #VERILATOR_FLAGS += -MMD
 # Optimize
 VERILATOR_FLAGS += -O3
-# Warn abount lint issues; may not want this on less solid designs
+# Warn about lint issues; may not want this on less solid designs
 VERILATOR_FLAGS += -Wall
 # Compile
 #VERILATOR_FLAGS += --build
@@ -68,7 +68,7 @@ VERILATOR_FLAGS += -Wall
 VERILATOR_FLAGS += --assert
 # Generate coverage analysis
 VERILATOR_FLAGS += --coverage
-# Speicfy the top file.
+# Specify the top file.
 #VERILATOR_FLAGS += --top keccak
 # X-assign
 VERILATOR_FLAGS += --x-assign unique
@@ -80,9 +80,9 @@ VERILATOR_FLAGS += --x-initial-edge
 #VERILATOR_FLAGS += --gdbbt
 
 # Input files for Verilator
-VERILATOR_INPUT = pkg_keccak.sv keccak.sv keccak_buffer.sv \
- 			keccak_round_constants_gen.sv  \
-			keccak_round.sv prog_keccak.cpp
+VERILATOR_SV_INPUT = pkg_keccak.sv keccak.sv keccak_buffer.sv \
+                     keccak_round_constants_gen.sv keccak_round.sv
+VERILATOR_INPUT = $(VERILATOR_SV_INPUT) prog_keccak.cpp
 
 ######################################################################
 default: run
@@ -124,19 +124,9 @@ run:
 show-config:
 	$(VERILATOR) -V
 
-VERILATOR_SV_INPUT = pkg_keccak.sv keccak.sv keccak_buffer.sv \
-				keccak_round_constants_gen.sv keccak_round.sv
-
 lint:
 	$(VERILATOR) --lint-only -Wall --top-module keccak $(VERILATOR_SV_INPUT)
 
 maintainer-copy::
 clean mostlyclean distclean maintainer-clean::
 	-rm -rf obj_dir logs *.log *.dmp *.vpd coverage.dat core
-
-# .PHONY: run
-# run: obj_dir/Vtb_keccak
-# 	obj_dir/Vtb_keccak | head
-
-# obj_dir/Vtb_keccak: $(SRC_FILES) $(TB_FILE)
-# 	verilator -Wall -sv --cc --exe --clk Clock --x-assign unique --x-initial unique --x-initial-edge $(SRC_FILES) $(TB_FILE)
