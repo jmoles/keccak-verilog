@@ -5,12 +5,14 @@ keccak-verilog
 
 A Verilog (specifically, SystemVerilog) implementation of Keccak, the algorithm standardized as SHA-3 in [FIPS 202](https://csrc.nist.gov/publications/detail/fips/202/final) (August 2015). This is for a SystemVerilog class project. This design was validated with Questa and Veloce. I presented it as part of class on 6 June 2013 and the presentation is available [here](https://docs.google.com/presentation/d/1fEvkiKvQkEGiJ8LwQPkU6PK8SjZtGHqMSyf2X4v82iY/).
 
-I updated this design in April 2021 to run with [Verilator](https://www.veripool.org/wiki/verilator). Prior then, it ran with QuestaSim. This code was designed for use with Veloce, but I no longer have access to the system and have not tested the code since June 2013. I keep the code here for anyone interested in the [tbx directory](tbx).
+I updated this design in April 2021 to run with [Verilator](https://verilator.org/). Prior to then, it ran with QuestaSim. The original design also targeted Mentor Veloce for emulation, but I no longer have access to that environment.
 
-The state of the repository as originally submitted for the class is preserved at the [`class-submission-2013`](https://github.com/jmoles/keccak-verilog/releases/tag/class-submission-2013) tag.
+The state of the repository as originally submitted for the class — including the QuestaSim testbenches and Veloce TBX wrapper — is preserved at the [`class-submission-2013`](https://github.com/jmoles/keccak-verilog/releases/tag/class-submission-2013) tag.
+
+See [CHANGELOG.md](CHANGELOG.md) for the history of changes since.
 
 ## Usage
-Verify you have the latest version of [Verilator](https://www.veripool.org/wiki/verilator) and its dependencies. Running
+Verify you have the latest version of [Verilator](https://verilator.org/) and its dependencies. Running
 
 ```shell
 make
@@ -18,6 +20,5 @@ make
 
 will generate the following output files in `logs`:
 
- - coverage.dat - Coverage data
- - output.txt - Output file from keccak test routines. Meant for comparison to [reference file](test_vectors/keccak_ref_out.txt).
- - vlt_dump.vcd - Traces meant for viewing in an application like [GTKWave](http://gtkwave.sourceforge.net/).
+ - `coverage.dat` — Coverage data
+ - `output.txt` — Output from the Keccak test routines. Meant for comparison against the [reference file](test_vectors/keccak_ref_out.txt).
