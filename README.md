@@ -7,6 +7,8 @@ A Verilog (specifically, SystemVerilog) implementation of Keccak, the algorithm 
 
 I updated this design in April 2021 to run with [Verilator](https://www.veripool.org/wiki/verilator). Prior then, it ran with QuestaSim. This code was designed for use with Veloce, but I no longer have access to the system and have not tested the code since June 2013. I keep the code here for anyone interested in the [tbx directory](tbx).
 
+The state of the repository as originally submitted for the class is preserved at the [`class-submission-2013`](https://github.com/jmoles/keccak-verilog/releases/tag/class-submission-2013) tag.
+
 ## Usage
 Verify you have the latest version of [Verilator](https://www.veripool.org/wiki/verilator) and its dependencies. Running
 
