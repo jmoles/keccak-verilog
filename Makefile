@@ -57,7 +57,7 @@ VERILATOR_FLAGS += -cc --exe
 # Generate makefile dependencies (not shown as complicates the Makefile)
 #VERILATOR_FLAGS += -MMD
 # Optimize
-VERILATOR_FLAGS += -Os
+VERILATOR_FLAGS += -O3
 # Warn abount lint issues; may not want this on less solid designs
 VERILATOR_FLAGS += -Wall
 # Compile
@@ -123,6 +123,12 @@ run:
 
 show-config:
 	$(VERILATOR) -V
+
+VERILATOR_SV_INPUT = pkg_keccak.sv keccak.sv keccak_buffer.sv \
+				keccak_round_constants_gen.sv keccak_round.sv
+
+lint:
+	$(VERILATOR) --lint-only -Wall --top-module keccak $(VERILATOR_SV_INPUT)
 
 maintainer-copy::
 clean mostlyclean distclean maintainer-clean::
