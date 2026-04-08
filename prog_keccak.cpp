@@ -145,7 +145,7 @@ int main(int argc, char** argv, char** env) {
                     top->Din_valid = false;
                     top->Last_block = false;
 
-                    if(DEBUG) printf("RESET: Time: %d Reset: %d reset_count: %d\n", main_time, top->Reset, reset_count);
+                    if(DEBUG) printf("RESET: Time: %llu Reset: %d reset_count: %d\n", main_time, top->Reset, reset_count);
 
                     reset_count++;
                     if(reset_count >= RESET_MAX) {
@@ -161,7 +161,7 @@ int main(int argc, char** argv, char** env) {
                     data_in >> line_in;
                     num_test = std::stoi(line_in);
 
-                    if(DEBUG) printf("NUM_TEST: Time: %d #Tests: %d\n", main_time, num_test);
+                    if(DEBUG) printf("NUM_TEST: Time: %llu #Tests: %d\n", main_time, num_test);
                     curr_state = DATA_IN;
                     break;
                 case DATA_IN:
@@ -189,21 +189,21 @@ int main(int argc, char** argv, char** env) {
                     top->Din = line_in_int64;
                     top->Din_valid = true;
 
-                    if(DEBUG) printf("DATA_IN: Time: %d Buffer_full: %d Din: 0x%.16llX\n", main_time, top->Buffer_full, top->Din);
+                    if(DEBUG) printf("DATA_IN: Time: %llu Buffer_full: %d Din: 0x%.16llX\n", main_time, top->Buffer_full, (unsigned long long)top->Din);
 
                     break;
 
                 case DATA_DONE:
                     top->Din_valid = false;
 
-                    if(DEBUG) printf("DATA_DONE: Time: %d Buffer_full: %d Ready: %d Last_Block: %d\n", main_time, top->Buffer_full, top->Ready, top->Last_block);
+                    if(DEBUG) printf("DATA_DONE: Time: %llu Buffer_full: %d Ready: %d Last_Block: %d\n", main_time, top->Buffer_full, top->Ready, top->Last_block);
 
                     if (top->Buffer_full) break;
                     if (!top->Ready) break;
 
                     top->Last_block = true;
                     curr_state = DATA_OUT;
-                    if(DEBUG) printf("DATA_DONE: Time: %d Buffer_full: %d Ready: %d Last_Block: %d\n", main_time, top->Buffer_full, top->Ready, top->Last_block);
+                    if(DEBUG) printf("DATA_DONE: Time: %llu Buffer_full: %d Ready: %d Last_Block: %d\n", main_time, top->Buffer_full, top->Ready, top->Last_block);
 
                     break;
 
@@ -218,7 +218,7 @@ int main(int argc, char** argv, char** env) {
                         top->Start = true;
                         curr_state = DATA_IN;
                     }
-                    if(DEBUG) printf("DATA_OUT: Time: %d Dout_Valid: %X Start: %d Dout: %llX\n", main_time, top->Dout_valid, top->Start, top->Dout);
+                    if(DEBUG) printf("DATA_OUT: Time: %llu Dout_Valid: %X Start: %d Dout: %llX\n", main_time, top->Dout_valid, top->Start, (unsigned long long)top->Dout);
                     break;
 
                 case DONE:
