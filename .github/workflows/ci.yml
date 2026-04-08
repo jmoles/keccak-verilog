@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Verilator
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y verilator
+          verilator --version
+
+      - name: Lint
+        run: make lint
+
+      - name: Build and run
+        run: make
+
+      - name: Compare against reference vectors
+        run: cmp -s logs/output.txt test_vectors/keccak_ref_out.txt
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: logs/

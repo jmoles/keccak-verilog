@@ -66,7 +66,7 @@ int main(int argc, char** argv, char** env) {
     int num_test, result;
 
     // Create our input/output files
-    char line_in[16];
+    char line_in[32];
     std::string data_file_in, line_out;
     std::FILE * file_out;
     file_out = fopen(FILE_OUT, "w");
@@ -122,9 +122,10 @@ int main(int argc, char** argv, char** env) {
     const int RESET_MAX = 30;   // Number of clock cycles to perform reset.
     int numTests = 0;           // Number of tests read in from file.
     int dout_count = 0;         // Number of times dout has passed valid data.
+    bool done = false;          // Set true once cleanup has run.
 
     // The main loop
-    while (!Verilated::gotFinish()) {
+    while (!Verilated::gotFinish() && !done) {
         // Increment time and clock
         top->Clock = !top->Clock;
         main_time++;
@@ -237,9 +238,8 @@ int main(int argc, char** argv, char** env) {
                         VerilatedCov::write("logs/coverage.dat");
                     #endif
 
-                    // Return good completion status
-                    // Don't use exit() or destructor won't get called
-                    return 0;
+                    done = true;
+                    break;
 
                     break;
 
@@ -257,4 +257,5 @@ int main(int argc, char** argv, char** env) {
         top->eval();
 
     } // end while !gotFinished()
+    return 0;
 } // end main
