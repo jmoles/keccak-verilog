@@ -62,8 +62,8 @@ VERILATOR_FLAGS += -O3
 VERILATOR_FLAGS += -Wall
 # Compile
 #VERILATOR_FLAGS += --build
-# Make waveforms
-VERILATOR_FLAGS += --trace
+# Make waveforms (disabled — no VCD dumper is wired up in prog_keccak.cpp)
+#VERILATOR_FLAGS += --trace
 # Check SystemVerilog assertions
 VERILATOR_FLAGS += --assert
 # Generate coverage analysis
